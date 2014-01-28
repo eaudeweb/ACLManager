@@ -721,7 +721,7 @@ class ACLManager(Folder, acl_permissions, acl_roles):
         self.use_captcha = True
 
     security.declarePublic('add_user')
-    def add_user(self):
+    def create_user(self):
         """ create user in zope's acl_users """
         if not verify_api_key(self.REQUEST):
             return invalid_key_response(self.REQUEST.RESPONSE)
