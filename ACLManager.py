@@ -725,6 +725,10 @@ class ACLManager(Folder, acl_permissions, acl_roles):
         """ create user in zope's acl_users """
         if not verify_api_key(self.REQUEST):
             return invalid_key_response(self.REQUEST.RESPONSE)
+        username = self.REQUEST.form['username']
+        password = self.REQUEST.form['password']
+        logger.info("Creating local account %r", username)
+        self.create_account(username, password, password)
         return 'ok'
 
 
