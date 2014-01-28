@@ -731,6 +731,17 @@ class ACLManager(Folder, acl_permissions, acl_roles):
         self.create_account(username, password, password)
         return 'ok'
 
+    security.declarePublic('delete_user')
+    def delete_user(self):
+        """ create user in zope's acl_users """
+        if not verify_api_key(self.REQUEST):
+            return invalid_key_response(self.REQUEST.RESPONSE)
+        username = self.REQUEST.form['username']
+        logger.info("Deleting local account %r", username)
+        if username in self.acl_users.data:
+            self.acl_users._delUsers([username], self.REQUEST)
+        return 'ok'
+
 
 InitializeClass(ACLManager)
 
