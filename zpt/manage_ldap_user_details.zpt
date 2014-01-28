@@ -1,0 +1,83 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<h1>Manage accounts</h1>
+
+<div id="tabbedmenu">
+	<ul>
+		<li><a href="users_html">Local users</a></li>
+		<li id="currenttab"><a href="ldap_users_html">LDAP users</a></li>
+		<li><a href="properties_html">Properties</a></li>
+	</ul>
+</div>
+
+<br style="clear:left" />
+
+<tal:block define="page python:request.get('page', 0);
+					username python:request.get('user', '');
+					user python:here.acl_users.getUser(username);
+					user_info python:here.getUserDetails(username);
+					user_dn user/getUserDN;
+					session python:request.SESSION;
+					op_completed python:session.get('op_completed', '')">
+
+<h2>Edit <span tal:replace="python:here.getLDAPAttribute(user_dn, 'cn')" />' credentials</h2>
+
+<p class="error_notice" tal:condition="op_completed">The settings for this person have been saved successfully. Now you can go back to <a tal:attributes="href string:ldap_users_html?page=${page}#${username}"> users listing</a></p>
+
+<form action="editLDAPUser" autocomplete="off" class="basic_form" id="edit_details" method="post">
+<div class="block">
+	<dl>
+		<dt>DN:</dt>
+		<dd tal:content="user_dn" />
+
+		<dt>Name:</dt>
+		<dd tal:content="python:here.getLDAPAttribute(user_dn, 'cn')" />
+
+		<dt>Email:</dt>
+		<dd tal:content="python:here.getLDAPAttribute(user_dn, 'mail')" />
+
+		<dt><label for="institution">Institution:</label></dt>
+		<dd>
+			<input id="institution" type="text" name="institution" maxlength="200" size="50" tal:attributes="value python:here.getLDAPAttribute(user_dn, 'o')" tal:condition="not:user_info" />
+			<input id="institution" type="text" name="institution" maxlength="200" size="50" tal:attributes="value user_info/institution" tal:condition="user_info" />
+		</dd>
+
+		<dt class="required"><label for="abbrev">Institution <br />(abbrev):</label></dt>
+		<dd><input id="abbrev" type="text" name="abbrev" maxlength="200" size="20" tal:attributes="value user_info/abbrev" tal:condition="user_info" /></dd>
+
+		<dt><label for="ms">MS:</label></dt>
+		<dd>
+			<input id="ms" type="text" name="ms" maxlength="2" size="20" value="" tal:condition="not:user_info" />
+			<input id="ms" type="text" name="ms" maxlength="2" size="20" tal:attributes="value user_info/MS" tal:condition="user_info" />
+			<em>country code</em>
+		</dd>
+
+	</dl>
+</div>
+<p class="blockintro">Choose one or more roles from the list below and click save changes in order to assign the roles to this user. If you don't specify at least one role, the user will be deleted.</p>
+<div class="block">
+	<dl>
+		<dt>Username:</dt>
+		<dd><span tal:content="python:here.getLDAPAttribute(user_dn, 'uid')" /></dd>
+
+		<dt><label for="roles">Role:</label></dt>
+		<dd tal:define="roles here/getValidRoles">
+			<select id="roles" name="roles" multiple="multiple">
+				<tal:block repeat="role roles">
+				<option tal:content="role" tal:attributes="value role;selected python:role in user.getRoles()"></option>
+				</tal:block>
+			</select>
+		</dd>
+	</dl>
+</div>
+
+<p>
+	<input type="hidden" name="username" tal:attributes="value username" />
+	<input type="submit" name="edit_details" id="edit_details" value="Save changes" /> or 
+	<a id="cancel" tal:attributes="href string:ldap_users_html?page=${page}#${username}" class="close">Cancel</a>
+</p>
+
+<span tal:replace="session/clear" />
+</tal:block>
+
+<span tal:replace="structure here/standard_html_footer" />

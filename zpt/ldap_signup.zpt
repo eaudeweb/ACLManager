@@ -1,0 +1,77 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<style>
+	form dd {
+		margin: 0;
+	}
+	form dt {
+		padding-top:10px;
+	}
+</style>
+
+<tal:block define="session python:request.SESSION;
+					op_completed python:session.get('op_completed', '');
+					is_past here/pastDeadline;
+					is_authenticated python:request.AUTHENTICATED_USER.getUserName() != 'Anonymous User'">
+
+	<tal:block condition="is_authenticated">
+		<h1>You already have an account</h1>
+		<p>There is no need to create a new account since you can use the current one. If you need additional roles please send an email to <em tal:content="here/support_email" /></p>
+	</tal:block>
+
+	<tal:block condition="op_completed">
+		<h1>Your Eionet account now has the required rights</h1>
+		<p>Use the login button in order to access the <em tal:content="here/aq_parent/title" /> </p>
+	</tal:block>
+
+	<tal:block condition="is_past">
+		<h1>The deadline for this consultation has passed</h1>
+		<p>You cannot sign-up for a new account because the registration process ended on <span tal:replace="here/getDeadline" /></p>
+	</tal:block>
+
+	<tal:block condition="python: not (op_completed or is_past or is_authenticated)">
+
+		<h1>Request reviewer rights for you Eionet account</h1>
+
+		<span tal:replace="session/err_login | nothing" />
+
+		<form name="signup" id="signup" method="post" action="signupLDAPUser">
+			<dl>
+				<dt><label for="username">Username:</label>*<span class="errormsg" tal:content="session/err_username | nothing" /></dt>
+				<dd><input type="text" id="username" name="username" tal:attributes="value python:session.get('username', '')" /></dd>
+
+				<dt><label for="password">Password:</label>*<span class="errormsg" tal:content="session/err_password | nothing" /></dt>
+				<dd><input type="password" id="password" name="password" /></dd>
+
+				<dt><label for="ms_eu">Member State:</label>*<span class="errormsg" tal:content="session/err_ms | nothing" /></dt>
+				<dd>
+					<select name="ms_eu" id="ms_eu">
+						<option value=""></option>
+						<tal:block repeat="record here/select_countries">
+							<option tal:attributes="value record/code; selected python:record['code'] == session.get('ms_eu', '');" tal:content="record/name" />
+						</tal:block>
+					</select> 
+					Other country: <input id="ms_other" type="text" name="ms_other" size="30" tal:attributes="value python:session.get('ms_other', '')" />
+				</dd>
+
+				<dt><label for="institution">Institution:</label>*<span class="errormsg" tal:content="session/err_institution | nothing" /></dt>
+				<dd><input type="text" id="institution" name="institution" size="50" maxlength="45" tal:attributes="value python:session.get('institution', '')" /></dd>
+
+				<dt><label for="abbrev">Institution (abbrev):</label></dt>
+				<dd><input type="text" id="abbrev" name="abbrev" size="15" maxlength="10" tal:attributes="value python:session.get('abbrev', '')" /></dd>
+
+				<tal:block condition="here/use_captcha">
+				<span tal:replace="structure here/showCaptcha" />*<span class="errormsg" tal:content="session/err_captcha | nothing" />
+				</tal:block>
+
+				<dt><input type="submit" value="Request rights" /></dt>
+			</dl>
+			<p>If you don't have an Eionet account use the <a href="signup_html">registration page</a> instead.</p>
+		</form>
+
+	</tal:block>
+
+	<span tal:replace="session/clear" />
+</tal:block>
+
+<span tal:replace="structure here/standard_html_footer" />

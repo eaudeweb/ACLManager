@@ -1,0 +1,30 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<tal:block define="session python:request.SESSION;
+					username python:session.get('username', '');
+					err_username python:session.get('err_username', '');
+					active_account python:session.get('active_account', '')">
+
+	<tal:block condition="username">
+		<h1>Hi <span tal:replace="username" /></h1>
+		<h2>Your account has been activated</h2>
+		<p>Use the login button in order to access the <em tal:content="here/aq_parent/title" />.</p>
+	</tal:block>
+
+	<tal:block condition="active_account">
+		<h1>Hi <span tal:replace="active_account" /></h1>
+		<h2>Your account has already been activated.</h2>
+		<p>Use the login button in order to access the <em tal:content="here/aq_parent/title" />. </p>
+	</tal:block>
+
+
+	<tal:block condition="err_username">
+		<h1 tal:content="err_username" />
+		<p>We're sorry but your account has failed to activate. Please send an email to <span tal:replace="here/support-email" /> and we'll activate it for you. Please include your username in the email. </p>
+	</tal:block>
+
+<span tal:replace="session/clear" />
+
+</tal:block>
+
+<span tal:replace="structure here/standard_html_footer" />

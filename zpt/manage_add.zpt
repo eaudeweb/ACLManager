@@ -1,0 +1,25 @@
+<span tal:replace="structure here/manage_page_header" />
+
+<style>
+	form dd{
+		margin: 0;
+		}
+</style>
+
+<p class="form-help">
+  Add a new ACL Manager with this form.
+</p>
+
+<form action="manage_addACLManager" name="addACL" id="addACL" method="post">
+	<dl>
+		<dt><label for="id">Id:</label></dt>
+		<dd><input type="text" id="id" name="id" /></dd>
+
+		<dt><label for="title">Title:</label></dt>
+		<dd><input type="text" id="title" name="title" /></dd>
+
+		<dt><input type="submit" value="Add" /></dt>
+	</dl>
+</form>
+
+<span tal:replace="structure here/manage_page_footer" />

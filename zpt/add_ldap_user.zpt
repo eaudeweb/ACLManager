@@ -1,0 +1,79 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<h1>Manage users</h1>
+
+<div id="tabbedmenu">
+	<ul>
+		<li><a href="ldap_users_html">Local users</a></li>
+		<li id="currenttab"><a href="ldap_users_html">LDAP users</a></li>
+		<li><a href="properties_html">Properties</a></li>
+	</ul>
+</div>
+
+<br style="clear:left" />
+
+
+<form method="post" action="" class="basic_form" name="frm_search_ldap" id="frm_search_ldap">
+	<p class="blockintro">Use this form to find users from the LDAP directory, view their details and assign them roles.</p>
+	<div class="block">
+		<dl>
+				<dt><label for="params">Criteria</label></dt>
+				<dd>
+					<select name="params">
+						<option tal:repeat="item here/getLDAPSchema"
+							tal:attributes="value python:item[0]"
+							tal:content="python:'%s (%s)' % (item[1], item[0])">Schema item</option>
+					</select>
+				</dd>
+				<dt><label for="term">Search</label></dt>
+				<dd><input type="text" name="term" size="30" tal:attributes="value python:request.get('term', '')" /></dd>
+		</dl>
+		<input type="hidden" name="search" value="" />
+		<input type="submit" name="search_user" value="Search" />
+	</div>
+</form>
+
+<tal:block define="search_param python:request.get('params', '');
+					search_term python:request.get('term', '')"
+			condition="python:request.has_key('search_user')">
+
+<form name="frm_ldap_users" class="basic_form" id="frm_ldap_users" method="post" tal:attributes="action string:${here/absolute_url}/addLDAPUserRoles">
+	<table class="datatable" style="font-size: 75%">
+		<caption>Users found in LDAP</caption>
+		<thead>
+		<tr>
+			<th>&nbsp;</th>
+			<th>User ID</th>
+			<th>Canonical name</th>
+			<th>Distinguished Name</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr tal:repeat="item python:here.findLDAPUsers(search_param, search_term)">
+			<td><input type="checkbox" name="user_dns" tal:attributes="value item/dn" checked="checked" /></td>
+			<td tal:content="python:test(here.isList(item['uid']), item['uid'][0], item['uid'])">uid</td>
+			<td tal:content="python:test(here.isList(item['cn']), item['cn'][0], item['cn'])">cn</td>
+			<td tal:content="item/dn">dn</td>
+		</tr>
+		</tbody>
+	</table>
+
+	<div class="block">
+		<dl>
+			<dt><label>Roles</label></dt>
+			<dd tal:define="roles here/getValidRoles">
+				<select id="roles" name="roles" multiple="multiple">
+					<tal:block repeat="role roles">
+						<option tal:content="role" tal:attributes="value role" />
+					</tal:block>
+				</select>
+			</dd>
+		</dl>
+	</div>
+	<input type="submit" name="add" value="Assign role" />
+	<a id="cancel" href="ldap_users_html" class="close">Cancel</a>
+</form>
+</tal:block>
+
+
+<span tal:replace="structure here/standard_html_footer" />

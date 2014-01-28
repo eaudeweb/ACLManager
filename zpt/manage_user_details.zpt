@@ -1,0 +1,89 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<h1>Manage accounts</h1>
+
+<div id="tabbedmenu">
+	<ul>
+		<li id="currenttab"><a href="users_html">Local users</a></li>
+		<li><a href="ldap_users_html">LDAP users</a></li>
+		<li><a href="properties_html">Properties</a></li>
+	</ul>
+</div>
+
+<br style="clear:left" />
+
+<tal:block define="page python:request.get('page', 0);
+					username python:request.get('user', '');
+					user python:here.acl_users.getUser(username);
+					user_info python:here.getUserDetails(username);
+					session python:request.SESSION;
+					op_completed python:session.get('op_completed', '')">
+
+<h2>Edit <span tal:replace="user_info/name" />' credentials</h2>
+
+<p class="error_notice" tal:condition="op_completed">
+	The settings for this person have been saved successfully. 
+	<tal:block condition="python:session.get('password_changed','')">An email with the new password has been sent to this person.</tal:block>
+	Now you can go back to <a href="users_html"> users listing</a>
+</p>
+
+<form action="editUser" autocomplete="off" class="basic_form" id="edit_details" method="post">
+<p class="blockintro">Modify user credentials. This person's name will appear with their messages, comments, and files.</p>
+<div class="block">
+	<dl>
+		<dt><label for="name">Name:</label></dt>
+		<dd><input id="name" type="text" name="name" maxlength="100" size="50" tal:attributes="value python:session.get('name', user_info['name'])" />
+			*<span tal:replace="session/err_name | nothing" />
+		</dd>
+
+		<dt><label for="email">Email:</label></dt>
+		<dd><input id="email" type="text" name="email" maxlength="100" size="50" tal:attributes="value python:session.get('email', user_info['email'])" />
+			*<span tal:replace="session/err_email | nothing" />
+		</dd>
+
+		<dt class="required"><label for="institution">Institution:</label></dt>
+		<dd><input id="institution" type="text" name="institution" maxlength="200" size="50" tal:attributes="value python:session.get('institution', user_info['institution'])" /></dd>
+
+		<dt class="required"><label for="abbrev">Institution <br />(abbrev):</label></dt>
+		<dd><input id="abbrev" type="text" name="abbrev" maxlength="200" size="20" tal:attributes="value python:session.get('abbrev', user_info['abbrev'])" /></dd>
+
+		<dt class="required"><label for="ms">MS:</label></dt>
+		<dd><input id="ms" type="text" name="ms" maxlength="200" size="50" tal:attributes="value python:session.get('ms', user_info['ms'])" /></dd>
+
+		<dt class="required"><label for="qualification">Qualification:</label></dt>
+		<dd><textarea id="qualification" name="qualification" cols="40" rows="5" maxlength="255" tal:content="python:session.get('qualification', user_info['qualification'])" /></dd>
+	</dl>
+</div>
+
+<p class="blockintro">Leave the password field blank if you don't want to change it. Otherwise, an email with the new password will be sent to the user.</p>
+<div class="block">
+	<dl>
+		<dt><label for="username">Username:</label></dt>
+		<dd><span tal:content="username" /></dd>
+
+		<dt><label for="password">Password:</label></dt>
+		<dd><input id="password" type="password" name="password" maxlength="100" size="30" /></dd>
+
+		<dt><label for="roles">Role:</label></dt>
+		<dd tal:define="roles here/getValidRoles">
+			<select id="roles" name="roles" multiple="multiple">
+				<tal:block repeat="role roles">
+				<option tal:content="role" tal:attributes="value role;selected python:role in user.getRoles()"></option>
+				</tal:block>
+			</select>
+		</dd>
+	</dl>
+</div>
+
+<p>
+	<input type="hidden" name="username" tal:attributes="value username" />
+	<input type="submit" name="edit_details" id="edit_details" value="Save changes" /> or 
+	<a id="cancel" href="users_html" class="close">Cancel</a>
+</p>
+
+</form>
+
+<span tal:replace="session/clear" />
+</tal:block>
+
+<span tal:replace="structure here/standard_html_footer" />

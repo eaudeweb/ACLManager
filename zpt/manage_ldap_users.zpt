@@ -1,0 +1,97 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<h1>Manage accounts</h1>
+
+<div id="tabbedmenu">
+	<ul>
+		<li><a href="users_html">Local users</a></li>
+		<li id="currenttab"><span>LDAP users</span></li>
+		<li><a href="properties_html">Properties</a></li>
+	</ul>
+</div>
+
+<br style="clear:left" />
+
+<tal:block define="ldap_list here/acl_users/getLocalUsers;
+					page python:request.get('page', 0);">
+
+<form action="deleteLDAPUsers" name="delLUsers" id="delLUsers" method="post" 
+	tal:define="paginator python:here.paggingUsers(ldap_list)" tal:condition="ldap_list">
+
+	<div tal:define="curr_page python:paginator.validate_page_number(page)" tal:condition="paginator/hits">
+		<div>
+			<span tal:replace="python:paginator.first_on_page(curr_page)" /> - <span tal:replace="python:paginator.last_on_page(curr_page)" />
+			<span i18n:translate="" tal:omit-tag="">of</span>
+			<span tal:replace="paginator/hits" />
+		</div>
+		<div>
+			<span tal:condition="python:paginator.has_previous_page(curr_page)">
+				<a tal:define="page python:curr_page-1" tal:attributes="href string:${here/absolute_url}/ldap_users_html?page=${page}" i18n:translate="">Previous</a>
+			</span>
+			<span tal:repeat="page python:paginator.page_range[:-1]">
+				<span tal:condition="python:page==curr_page" tal:content="page" />
+				<a tal:attributes="href string:${here/absolute_url}/ldap_users_html?page=${page}" 
+					tal:condition="python:page!=curr_page" tal:content="page" />
+			</span>
+			<span tal:condition="python:paginator.has_next_page(curr_page)">
+				<a tal:define="page python:curr_page+1" tal:attributes="href string:${here/absolute_url}/ldap_users_html?page=${page}" i18n:translate="">Next</a>
+			</span>
+		</div>
+	</div>
+	<table class="datatable" style="font-size: 75%">
+		<thead>
+			<tr>
+				<th rowspan="2">&nbsp;</th>
+				<th rowspan="2">Username</th>
+				<th rowspan="2">Name</th>
+				<th rowspan="2">Email</th>
+				<th rowspan="2">Institution</th>
+				<th rowspan="2">MS</th>
+				<th colspan="4">Roles</th>
+				<th rowspan="2">Created</th>
+			</tr>
+			<tr>
+				<th>Administrator</th>
+				<th>ETC Expert</th>
+				<th>Stakeholder</th>
+				<th>NAT</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tal:block repeat="user python:paginator.get_page(page)">
+			<tr tal:define="user_dn python:user[0];
+							user_roles python:user[1];
+							roles python:here.getLDAPUserRoles(user_roles);
+							username python:here.getLDAPAttribute(user_dn, 'uid')">
+				<td><input type="checkbox" name="del_users" id="del_users" tal:attributes="value user_dn" /></td>
+				<td><a tal:attributes="name username;
+										href string:ldap_user_details_html?user=${username}&amp;page=${page}" 
+						tal:content="username" />
+				<td tal:content="python:here.getLDAPAttribute(user_dn, 'cn')" />
+				<td tal:content="python:here.getLDAPAttribute(user_dn, 'mail')" />
+				<td tal:content="python:here.getUserInstAbbrev(username)" tal:attributes="title python:here.getUserInstitution(username)" />
+				<td tal:content="python:here.getUserMS(username)" />
+				<td class="center">
+					<span tal:condition="roles/administrator">*</span>
+				</td>
+				<td class="center">
+					<span tal:condition="roles/expert">*</span>
+				</td>
+				<td class="center">
+					<span tal:condition="roles/stakeholder">*</span>
+				</td>
+				<td class="center">
+					<span tal:condition="roles/nat">*</span>
+				</td>
+				<td tal:content="python:here.getUserAccountDate(username)" />
+			</tr>
+			</tal:block>
+		</tbody>
+	</table>
+	<input type="submit" value="Delete" />
+	<a tal:attributes="href string:${here/absolute_url}/add_ldap_user_html" title="Article 17 Experts Consultation: Add LDAP users">Add users</a> 
+</form>
+<p tal:condition="not:ldap_list">No LDAP users mapped locally were found</p>
+</tal:block>
+
+<span tal:replace="structure here/standard_html_footer" />

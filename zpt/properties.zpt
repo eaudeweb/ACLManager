@@ -1,0 +1,53 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<h1>Manage accounts</h1>
+
+<div id="tabbedmenu">
+	<ul>
+		<li><a href="users_html">Local users</a></li>
+		<li><a href="ldap_users_html">LDAP users</a></li>
+		<li id="currenttab"><span>Properties</span></li>
+	</ul>
+</div>
+
+<br style="clear:left" />
+
+<tal:block define="session python:request.SESSION;
+					op_completed python:session.get('op_completed', '')
+					">
+
+<p class="error_notice" tal:condition="op_completed">The settings have been saved successfully.</p>
+
+<form action="editProperties" autocomplete="off" class="basic_form" id="edit_properties" method="post">
+	<p class="blockintro">Edit properties.</p>
+	<div class="block">
+		<dl>
+			<dt><label for="deadline">Deadline:</label></dt>
+			<dd><input id="deadline" type="text" name="deadline" maxlength="10" size="10" tal:attributes="value here/deadline" /> (dd/mm/yyyy)</dd>
+
+			<dt><label for="public_key">Public key:</label></dt>
+			<dd><input id="public_key" type="text" name="public_key" maxlength="100" size="60" tal:attributes="value here/public_key" /></dd>
+
+			<dt><label for="private_key">Private key:</label></dt>
+			<dd><input id="private_key" type="text" name="private_key" maxlength="100" size="60" tal:attributes="value here/private_key" /></dd>
+
+			<dt><label for="support_email">Support email:</label></dt>
+			<dd><input id="support_email" type="text" name="support_email" maxlength="60" size="50" tal:attributes="value here/support_email" /></dd>
+
+			<dt><label for="register_email">Register email:</label></dt>
+			<dd><input id="register_email" type="text" name="register_email" maxlength="60" size="50" tal:attributes="value here/register_email" /></dd>
+
+			<dt><label for="use_captcha">Use CAPTCHA:</label></dt>
+			<dd><input id="use_captcha" type="checkbox" name="use_captcha" tal:attributes="checked here/use_captcha" /></dd>
+		</dl>
+	</div>
+
+	<p>
+		<input type="submit" name="save" id="save" value="Save changes" />
+	</p>
+
+</form>
+
+<span tal:replace="session/clear" />
+</tal:block>
+<span tal:replace="structure here/standard_html_footer" />

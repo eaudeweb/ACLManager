@@ -1,0 +1,136 @@
+<span tal:replace="structure here/standard_html_header" />
+
+<h1>Manage users</h1>
+
+<div id="tabbedmenu">
+	<ul>
+		<li id="currenttab"><span>Local users</span></li>
+		<li><a href="ldap_users_html">LDAP users</a></li>
+		<li><a href="properties_html">Properties</a></li>
+	</ul>
+</div>
+
+<br style="clear:left" />
+
+<tal:block define="usernames here/acl_users/get_user_names;
+		users python:here.getUsersType(usernames);
+		pending_list python:users[0];
+		active_list python:users[1];
+		page python:request.get('page', 0);">
+
+<form action="deleteLocalUsers" name="delPUsers" id="delPUsers" method="post" tal:condition="pending_list">
+	<a name="pending" />
+	<table class="datatable" style="font-size: 75%">
+		<caption>Pending users</caption>
+		<thead>
+			<tr>
+				<th>&nbsp;</th>
+				<th>Username</th>
+				<th>Name</th>
+				<th>Email</th>
+				<th>Institution</th>
+				<th>MS</th>
+				<th>Created</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tal:block repeat="user pending_list">
+			<tr tal:define="username user/getUserName;
+							user_info python:here.getUserDetails(username)">
+				<td><input type="checkbox" name="del_users" id="del_users" tal:attributes="value username" /></td>
+				<td><a tal:attributes="href string:user_details_html?user=${username}; name username;" tal:content="username | nothing" title="Click to see user's details" /></td>
+				<td tal:content="user_info/name" />
+				<td tal:content="user_info/email" />
+				<td tal:content="user_info/abbrev | nothing" tal:attributes="title user_info/institution" />
+				<td tal:content="user_info/MS" />
+				<td tal:content="user_info/account_date" />
+			</tr>
+			</tal:block>
+		</tbody>
+	</table>
+	<input type="hidden" name="type" value="pending" />
+	<input type="submit" value="Delete" />
+</form>
+
+<p tal:condition="not:pending_list">No pending users found</p>
+
+<form action="deleteLocalUsers" name="delAUsers" id="delAUsers" method="post" 
+	tal:define="paginator python:here.paggingUsers(active_list)" tal:condition="active_list">
+	<a name="active" />
+
+	<div tal:define="curr_page python:paginator.validate_page_number(page)" tal:condition="paginator/hits">
+		<div>
+			<span tal:replace="python:paginator.first_on_page(curr_page)" /> - <span tal:replace="python:paginator.last_on_page(curr_page)" />
+			<span i18n:translate="" tal:omit-tag="">of</span>
+			<span tal:replace="paginator/hits" />
+		</div>
+		<div>
+			<span tal:condition="python:paginator.has_previous_page(curr_page)">
+				<a tal:define="page python:curr_page-1" tal:attributes="href string:${here/absolute_url}/users_html?page=${page}" i18n:translate="">Previous</a>
+			</span>
+			<span tal:repeat="page python:paginator.page_range[:-1]">
+				<span tal:condition="python:page==curr_page" tal:content="page" />
+				<a tal:attributes="href string:${here/absolute_url}/users_html?page=${page}" 
+					tal:condition="python:page!=curr_page" tal:content="page" />
+			</span>
+			<span tal:condition="python:paginator.has_next_page(curr_page)">
+				<a tal:define="page python:curr_page+1" tal:attributes="href string:${here/absolute_url}/users_html?page=${page}" i18n:translate="">Next</a>
+			</span>
+		</div>
+	</div>
+
+	<table class="datatable" style="font-size: 75%">
+		<caption>Active users</caption>
+		<thead>
+			<tr>
+				<th rowspan="2">&nbsp;</th>
+				<th rowspan="2">Username</th>
+				<th rowspan="2">Name</th>
+				<th rowspan="2">Email</th>
+				<th rowspan="2">Institution</th>
+				<th rowspan="2">MS</th>
+				<th colspan="4">Roles</th>
+				<th rowspan="2">Registration date</th>
+			</tr>
+			<tr>
+				<th>Administrator</th>
+				<th>ETC Expert</th>
+				<th>Stakeholder</th>
+				<th>NAT</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tal:block repeat="user python:paginator.get_page(page)">
+			<tr tal:define="user_roles python:here.getUserRoles(user);
+							username user/getUserName;
+							user_info python:here.getUserDetails(username)">
+				<td><input type="checkbox" name="del_users" id="del_users" tal:attributes="value username" /></td>
+				<td><a tal:attributes="href string:user_details_html?user=${username}; name username;" tal:content="username | nothing" /></td>
+				<td tal:content="user_info/name | nothing" />
+				<td tal:content="user_info/email | nothing" />
+				<td tal:content="user_info/abbrev | nothing" tal:attributes="title user_info/institution" />
+				<td tal:content="user_info/MS | nothing" />
+				<td class="center">
+					<span tal:condition="user_roles/administrator">*</span>
+				</td>
+				<td class="center">
+					<span tal:condition="user_roles/expert">*</span>
+				</td>
+				<td class="center">
+					<span tal:condition="user_roles/stakeholder">*</span>
+				</td>
+				<td class="center">
+					<span tal:condition="user_roles/nat">*</span>
+				</td>
+				<td tal:content="user_info/account_date | nothing" />
+			</tr>
+			</tal:block>
+		</tbody>
+	</table>
+	<input type="hidden" name="type" value="active" />
+	<input type="submit" value="Delete" />
+</form>
+<p tal:condition="not:active_list">No active users found</p>
+</tal:block>
+
+<span tal:replace="structure here/standard_html_footer" />
