@@ -16,6 +16,8 @@
 #  Original Code:
 #        Cornel Nitu (Eau de Web)
 
+import os
+import logging
 import re
 from DateTime import DateTime
 
@@ -33,6 +35,8 @@ import captcha
 from paginator import ObjectPaginator
 from permissions import acl_permissions
 from roles import acl_roles
+
+logger = logging.getLogger(__name__)
 
 manage_addACLManager_html = PageTemplateFile('zpt/manage_add', globals())
 
@@ -716,4 +720,25 @@ class ACLManager(Folder, acl_permissions, acl_roles):
         """ update procedure """
         self.use_captcha = True
 
+    security.declarePublic('add_user')
+    def add_user(self):
+        """ create user in zope's acl_users """
+        if not verify_api_key(self.REQUEST):
+            return invalid_key_response(self.REQUEST.RESPONSE)
+        return 'ok'
+
+
 InitializeClass(ACLManager)
+
+def verify_api_key(REQUEST):
+    key = os.environ.get('ACL_MANAGER_API_KEY')
+    if not key:
+        logger.warn("No ACL_MANAGER_API_KEY is set")
+        return False
+    request_key = REQUEST.form.get('api_key')
+    return bool(request_key == key)
+
+
+def invalid_key_response(RESPONSE):
+    RESPONSE.setStatus(403)
+    return "Api key is not valid"
