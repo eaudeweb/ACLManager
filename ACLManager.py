@@ -729,6 +729,9 @@ class ACLManager(Folder, acl_permissions, acl_roles):
         password = self.REQUEST.form['password']
         logger.info("Creating local account %r", username)
         self.create_account(username, password, password)
+        if password.startswith('{SSHA}'):
+            # the user folder probably re-encrypted our password; overwrite it
+            self.acl_users.data[username].__ = password
         return 'ok'
 
     security.declarePublic('delete_user')
